@@ -4,7 +4,7 @@
 CC=clang++
 BUILD=build
 DIST=dist
-CCFLAGS=-c -g -Weverything -Wno-disabled-macro-expansion -Wno-padded -Wno-weak-vtables
+CCFLAGS=-c -g -Weverything
 LDFLAGS=-o $(DIST)/prog -lcurl 
 
 all:	$(DIST)/prog
