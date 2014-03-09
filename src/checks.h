@@ -13,6 +13,9 @@
 int check_socksFetch(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const int timeout, const bool verbose, std::string* message);
 int check_hibernationState(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message);
 int check_bandwidth(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message);
+int check_ORReachability(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message);
+int check_DIRReachability(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message);
+int check_Accounting(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message);
 
 #endif	/* CHECKS_H */
 

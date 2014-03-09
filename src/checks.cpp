@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include <iostream>
+#include <unistd.h>
 #include "checks.h"
 #include "consts.h"
 #include "socketException.h"
@@ -27,6 +28,9 @@ void buildMessage(const char* result, const char* label, const char* uom, const 
 std::string controlPortRequest(const char* hostname, const int port, const char* authPass, const char* requestStr, const bool verbose);
 std::string getSocksAddress(const char* hostname, const int port, const char* authPass, const bool verbose);
 std::string getHibernationState(const char* hostname, const int port, const char* authPass, const bool verbose);
+std::string getORReachability(const char* hostname, const int port, const char* authPass, const bool verbose);
+std::string getDIRReachability(const char* hostname, const int port, const char* authPass, const bool verbose);
+double getAccounting(const char* hostname, const int port, const char* authPass, const bool verbose);
 double curlFetch(const char* socksAddr, const int timeout, const bool verbose);
 double getBytesRead(const char* hostname, const int port, const char* authPass, const bool verbose);
 double getBytesWritten(const char* hostname, const int port, const char* authPass, const bool verbose);
@@ -142,7 +146,7 @@ int check_bandwidth(const char* hostname, const int port, const char* authPass, 
 		
 		int status = statusCheck(bw, warning, critical);
 		char* str = new char[64];
-		sprintf(str, "%d", (int) bw);
+		sprintf(str, "%.0f", bw);
 
 		buildMessage(str, "bandwidth", "B", status, warning, critical, message);
 
@@ -156,9 +160,103 @@ int check_bandwidth(const char* hostname, const int port, const char* authPass, 
 	}
 }
 
+/**
+ * Checks whether the tor server beleives it's OR port is reachable from the internet
+ * @param hostname The hostname of the tor server
+ * @param port The control port
+ * @param authPass The authentication passwd on the conrtol port
+ * @param warning The warning threshold
+ * @param critical The critical threshold
+ * @param verbose Print detailed log to STDOUT
+ * @param message the reslt message
+ * @return RET_OK, RET_WARN, RET_CRIT or RET_UNKNOWN depending on the result of the check
+ */
+int check_ORReachability(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message)
+{
+	VERBOSE("Entering check_ORReachability");
+	
+	*message = "ORREACHABILITY ";
+
+	try
+	{
+		//Ask the control port if it thinks the OR port is reachable.
+		std::string state = getORReachability(hostname, port, authPass, verbose);
+		int status = statusCheck(atoi(state.c_str()), warning, critical);
+
+		buildMessage(state.c_str(), "state", "", status, warning, critical, message);
+
+		return status;
+	}
+	catch (EXCEPTION e)
+	{
+		*message += "CRITICAL " + e.getMessage();
+		return RET_UNKNOWN;
+	}
+}
+
+/**
+ * Checks whether the tor server beleives it's DIR port is reachable from the internet
+ * @param hostname The hostname of the tor server
+ * @param port The control port
+ * @param authPass The authentication passwd on the conrtol port
+ * @param warning The warning threshold
+ * @param critical The critical threshold
+ * @param verbose Print detailed log to STDOUT
+ * @param message the reslt message
+ * @return RET_OK, RET_WARN, RET_CRIT or RET_UNKNOWN depending on the result of the check
+ */
+int check_DIRReachability(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message)
+{
+	VERBOSE("Entering check_DIRReachability");
+	
+	*message = "DIRREACHABILITY ";
+
+	try
+	{
+		//Ask the control port if it thinks the OR port is reachable.
+		std::string state = getDIRReachability(hostname, port, authPass, verbose);
+		int status = statusCheck(atoi(state.c_str()), warning, critical);
+
+		buildMessage(state.c_str(), "state", "", status, warning, critical, message);
+
+		return status;
+	}
+	catch (EXCEPTION e)
+	{
+		*message += "CRITICAL " + e.getMessage();
+		return RET_UNKNOWN;
+	}
+}
+
+int check_Accounting(const char* hostname, const int port, const char* authPass, const char* warning, const char* critical, const bool verbose, std::string* message)
+{
+	VERBOSE("Entering check_Accounting");
+	
+	*message = "ACCOUNTING ";
+
+	try
+	{
+		//Ask the control port if it thinks the OR port is reachable.
+		double bytes = getAccounting(hostname, port, authPass, verbose);
+		int status = statusCheck(bytes, warning, critical);
+
+		char* str = new char[64];
+		sprintf(str, "%.0f", bytes);
+
+		buildMessage(str, "bytesRemaining", "B", status, warning, critical, message);
+
+		delete [] str;
+		return status;
+	}
+	catch (EXCEPTION e)
+	{
+		*message += "CRITICAL " + e.getMessage();
+		return RET_UNKNOWN;
+	}
+}
+
 // <editor-fold defaultstate="collapsed" desc="Local functions">
 // <editor-fold defaultstate="collapsed" desc="Functions common to multiple checks">
-
 /**
  * Makes a command request on the tor control port and returns the output
  * @param hostname The hostname to make the request to
@@ -402,7 +500,6 @@ std::string getHibernationState(const char* hostname, const int port, const char
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Bandwidth internal functions">
-
 double getBytesRead(const char* hostname, const int port, const char* authPass, const bool verbose)
 {
 	std::string retVal = controlPortRequest(hostname, port, authPass, "getinfo traffic/read\n", verbose);
@@ -441,6 +538,62 @@ double getBytesWritten(const char* hostname, const int port, const char* authPas
 	iss >> val;
 
 	return val;
+}
+// </editor-fold>
+
+// <editor-fold defaultstate="collapsed" desc="ORReachability internal functions">
+std::string getORReachability(const char* hostname, const int port, const char* authPass, const bool verbose)
+{
+	std::string retVal = controlPortRequest(hostname, port, authPass, "GETINFO status/reachability-succeeded/or\n", verbose);
+	const char prefix[] = "250-status/reachability-succeeded/or=";
+	const unsigned long prefixLen = strnlen(prefix, 64);
+
+	if (retVal.substr(0, prefixLen).compare(prefix) != 0)
+	{
+		std::string message = "Fetching hibernation state failed: ";
+		THROWCHECKEXCEPTION(message + retVal);
+	}
+
+	return retVal.substr(prefixLen, 1);
+}
+// </editor-fold>
+
+// <editor-fold defaultstate="collapsed" desc="DIRReachability internal functions">
+std::string getDIRReachability(const char* hostname, const int port, const char* authPass, const bool verbose)
+{
+	std::string retVal = controlPortRequest(hostname, port, authPass, "GETINFO status/reachability-succeeded/dir\n", verbose);
+	const char prefix[] = "250-status/reachability-succeeded/dir=";
+	const unsigned long prefixLen = strnlen(prefix, 64);
+
+	if (retVal.substr(0, prefixLen).compare(prefix) != 0)
+	{
+		std::string message = "Fetching hibernation state failed: ";
+		THROWCHECKEXCEPTION(message + retVal);
+	}
+
+	return retVal.substr(prefixLen, 1);
+}
+// </editor-fold>
+
+// <editor-fold defaultstate="collapsed" desc="Accounting internal functions">
+double getAccounting(const char* hostname, const int port, const char* authPass, const bool verbose)
+{
+	std::string retVal = controlPortRequest(hostname, port, authPass, "getinfo accounting/bytes-left\n", verbose);
+	const char prefix[] = "250-accounting/bytes-left=";
+	const unsigned long prefixLen = strnlen(prefix, 64);
+
+	if (retVal.substr(0, prefixLen).compare(prefix) != 0)
+	{
+		std::string message = "Fetching hibernation state failed: ";
+		THROWCHECKEXCEPTION(message + retVal);
+	}
+
+	double read, write;
+	std::istringstream iss;
+	iss.str(retVal.substr(prefixLen, retVal.find('\r') - prefixLen));
+	iss >> read >> write;
+	
+	return read + write;
 }
 // </editor-fold>
 // </editor-fold>

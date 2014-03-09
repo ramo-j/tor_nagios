@@ -87,7 +87,16 @@ int main(int argc, char** argv)
 		break;
 	case CHK_BANDWIDTH:
 		retVal = check_bandwidth(hostname.c_str(), port, authPass.c_str(), warning.c_str(), critical.c_str(), verbose, &message);
-		break;		
+		break;
+	case CHK_ORPORT:
+		retVal = check_ORReachability(hostname.c_str(), port, authPass.c_str(), warning.c_str(), critical.c_str(), verbose, &message);
+		break;
+	case CHK_DIRPORT:
+		retVal = check_DIRReachability(hostname.c_str(), port, authPass.c_str(), warning.c_str(), critical.c_str(), verbose, &message);
+		break;
+	case CHK_ACCOUNTING:
+		retVal = check_Accounting(hostname.c_str(), port, authPass.c_str(), warning.c_str(), critical.c_str(), verbose, &message);
+		break;
 	}
 
 	std::cout << message << std::endl;

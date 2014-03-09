@@ -18,6 +18,9 @@
 #define CHK_SOCKSFETCH 1
 #define CHK_HIBERNATE 2
 #define CHK_BANDWIDTH 3
+#define CHK_ORPORT 4
+#define CHK_DIRPORT 5
+#define CHK_ACCOUNTING 6
 
 #define SLEEPDURATION 10
 

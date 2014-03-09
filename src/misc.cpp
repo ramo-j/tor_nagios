@@ -27,11 +27,13 @@ void usage(char* argv0)
 			"\nCheck Types are as follows:\n" <<
 			"1 - Page fetch through socks port. Socks port must be enabled.\n"
 			"2 - Hibernation state check. Warn and Crit values: 0 = awake, 1 = soft, 2 = hard hibernation. '-w 1 -c 2' recommended\n" <<
-			"3 - Bandwidth in bytes/sec (up and down). Warn and Crit must be full values (eg, 20480 instead of 20KB)."
-			"\n\n" <<
-			"Warning and Critical thresholds can take the values:\n" <<
+			"3 - Bandwidth in bytes/sec (up and down). Warn and Crit must be full values (eg, 20480 instead of 20KB).\n"
+			"4 - OR Port reachability (1 for success, 0 for failure)\n"
+			"5 - DIR Port reachability (1 for success, 0 for failure)\n"
+			"6 - Bytes remaining in accounting before hubernation (both read and write)\n"
+			"\nWarning and Critical thresholds can take the values:\n" <<
 			"\tx\talert if less than 0 or greater than or equal to x\n" <<
-			"\tx:\tlert if less than x\n" <<
+			"\tx:\talert if less than x\n" <<
 			"\t~:x\talert if greater than x\n" <<
 			"\tx:y\talert if less than x OR greater than y\n" <<
 			"\t@x:y\talert if greater than or equal to x AND less than or equal to y\n" << std::endl;
