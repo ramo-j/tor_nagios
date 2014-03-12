@@ -5,12 +5,12 @@ A nagios plugin for checking a tor server
 
 Currently it supports 6 different checks:
 
-1 - A page fetch through the socks proxy port 
-2 - Hibernation state 
-3 - Current bandwidth 
-4 - OR port reachability 
-5 - DIR port reachability 
-6 - Bytes remaining until hibernation 
+1. A page fetch through the socks proxy port
+2. Hibernation state 
+3. Current bandwidth 
+4. OR port reachability 
+5. DIR port reachability 
+6. Bytes remaining until hibernation 
 
 All code is Beerware licensed https://en.wikipedia.org/wiki/Beerware
 
