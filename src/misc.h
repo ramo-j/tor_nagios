@@ -10,8 +10,6 @@
 #ifndef MISC_H
 #define	MISC_H
 
-#define VERSION 0.001
-
 #define VERBOSE(message) std::cout << (verbose ? message : "") << (verbose ? "\n" : "")
 
 void usage(char* argv0);

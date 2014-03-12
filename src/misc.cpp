@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include "misc.h"
+#include "config.h"
 
 void usage(char* argv0)
 {
@@ -36,10 +37,14 @@ void usage(char* argv0)
 			"\tx:\talert if less than x\n" <<
 			"\t~:x\talert if greater than x\n" <<
 			"\tx:y\talert if less than x OR greater than y\n" <<
-			"\t@x:y\talert if greater than or equal to x AND less than or equal to y\n" << std::endl;
+			"\t@x:y\talert if greater than or equal to x AND less than or equal to y\n" << 
+			"\n" << 
+			"\n" << 
+			PACKAGE_STRING << " - Please send bug reports to " << PACKAGE_BUGREPORT << "\n" << 
+			"" << std::endl;
 }
 
 void version(char* argv0)
 {
-	std::cout << argv0 << " v" << VERSION << std::endl;
+	std::cout << PACKAGE_STRING << std::endl;
 }

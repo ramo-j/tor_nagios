@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 			break;
 		case 'V':
 			version(argv[0]);
-			return RET_UNKNOWN;
+			return RET_OK;
 		case 'h':
 			usage(argv[0]);
 			return RET_UNKNOWN;

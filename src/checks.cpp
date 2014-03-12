@@ -73,7 +73,7 @@ int check_socksFetch(const char* hostname, const int port, const char* authPass,
 	}
 	catch (EXCEPTION e)
 	{
-		*message += "CRITICAL " + e.getMessage();
+		*message += "UNKNOWN " + e.getMessage();
 		return RET_UNKNOWN;
 	}
 }
